@@ -18,22 +18,29 @@ NAN_METHOD(Stringify) {
       v8::Local<v8::String> gap =
         Nan::New<v8::String>(std::string(len, ' ')).ToLocalChecked();
       info.GetReturnValue().Set(
-        (new Nan::JSON)->Stringify(info[0]->ToObject(), gap).ToLocalChecked()
+        (new Nan::JSON)->Stringify(
+          Nan::To<v8::Object>(info[0]).ToLocalChecked(), gap
+        ).ToLocalChecked()
       );
     } else if (info[2]->IsString()) {
       info.GetReturnValue().Set(
-        (new Nan::JSON)->Stringify(info[0]->ToObject(),
+        (new Nan::JSON)->Stringify(
+          Nan::To<v8::Object>(info[0]).ToLocalChecked(),
           Nan::To<v8::String>(info[2]).ToLocalChecked()
         ).ToLocalChecked()
       );
     } else {
       info.GetReturnValue().Set(
-        (new Nan::JSON)->Stringify(info[0]->ToObject()).ToLocalChecked()
+        (new Nan::JSON)->Stringify(
+          Nan::To<v8::Object>(info[0]).ToLocalChecked()
+        ).ToLocalChecked()
       );
     }
   } else {
     info.GetReturnValue().Set(
-      (new Nan::JSON)->Stringify(info[0]->ToObject()).ToLocalChecked()
+      (new Nan::JSON)->Stringify(
+        Nan::To<v8::Object>(info[0]).ToLocalChecked()
+      ).ToLocalChecked()
     );
   }
 }

@@ -108,6 +108,34 @@ class JSON {
   Nan::Callback m_cb_stringify;
 #endif
 
+  static v8::Local<v8::Value> Call(const char *method,
+    int argc, v8::Local<v8::Value> *argv) {
+    v8::Local<v8::Value> globalJSON =
+      Nan::Get(
+        Nan::GetCurrentContext()->Global(),
+        Nan::New("JSON").ToLocalChecked()
+      ).ToLocalChecked();
+
+    if (!globalJSON->IsObject()) {
+      return Nan::Undefined();
+    }
+
+    v8::Local<v8::Object> json =
+      Nan::To<v8::Object>(globalJSON).ToLocalChecked();
+
+    v8::Local<v8::Value> thisMethod =
+      Nan::Get(json, Nan::New(method).ToLocalChecked()).ToLocalChecked();
+
+    if (thisMethod.IsEmpty() || !thisMethod->IsFunction()) {
+      return Nan::Undefined();
+    }
+
+    v8::Local<v8::Function> methodFunction =
+      v8::Local<v8::Function>::Cast(thisMethod);
+
+    return methodFunction->Call(json, argc, argv);
+  }
+
 #if NAN_JSON_H_NEED_PARSE
   inline v8::Local<v8::Value> parse(v8::Local<v8::Value> arg) {
     return m_cb_parse.Call(1, &arg);
