@@ -23,8 +23,7 @@ NAN_METHOD(Stringify) {
     } else if (info[2]->IsString()) {
       info.GetReturnValue().Set(
         Nan::JSON::Stringify(info[0]->ToObject(),
-          Nan::To<v8::String>(info[2]).ToLocalChecked()
-        ).ToLocalChecked()
+          info[2]->ToString()).ToLocalChecked()
       );
     } else {
       info.GetReturnValue().Set(
