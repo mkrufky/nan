@@ -23,57 +23,6 @@
 
 class JSON {
  public:
-  static inline
-  Nan::MaybeLocal<v8::Value> Parse(v8::Local<v8::String> jsonString) {
-#if NAN_JSON_H_NEED_PARSE
-    Nan::HandleScope scope;
-    return instance().parse(jsonString);
-#else
-#if (NODE_MAJOR_VERSION >= 7)
-    return v8::JSON::Parse(Nan::GetCurrentContext(), jsonString);
-#else
-    return v8::JSON::Parse(jsonString);
-#endif
-#endif
-  }
-
-  static inline
-  Nan::MaybeLocal<v8::String> Stringify(v8::Local<v8::Object> jsonObject) {
-#if NAN_JSON_H_NEED_STRINGIFY
-    Nan::HandleScope scope;
-    return instance().stringify(jsonObject)->ToString();
-#else
-    return v8::JSON::Stringify(Nan::GetCurrentContext(), jsonObject);
-#endif
-  }
-
-  static inline
-  Nan::MaybeLocal<v8::String> Stringify(v8::Local<v8::Object> jsonObject,
-    v8::Local<v8::String> gap) {
-#if NAN_JSON_H_NEED_STRINGIFY
-    Nan::HandleScope scope;
-    return instance().stringify(jsonObject, gap)->ToString();
-#else
-    return v8::JSON::Stringify(Nan::GetCurrentContext(), jsonObject, gap);
-#endif
-  }
-
- private:
-  NAN_DISALLOW_ASSIGN_COPY_MOVE(JSON)
-#if NAN_JSON_H_NEED_PARSE
-  Nan::Callback m_cb_parse;
-#endif
-#if NAN_JSON_H_NEED_STRINGIFY
-  Nan::Callback m_cb_stringify;
-#endif
-
-#if (NAN_JSON_H_NEED_PARSE + NAN_JSON_H_NEED_STRINGIFY)
-  static JSON& instance() {
-    static JSON i;
-    return i;
-  }
-#endif
-
   JSON() {
 #if (NAN_JSON_H_NEED_PARSE + NAN_JSON_H_NEED_STRINGIFY)
     v8::Local<v8::Value> globalJSON =
@@ -111,6 +60,50 @@ class JSON {
     m_cb_stringify.Reset();
 #endif
   }
+
+  inline
+  Nan::MaybeLocal<v8::Value> Parse(v8::Local<v8::String> jsonString) {
+#if NAN_JSON_H_NEED_PARSE
+    Nan::HandleScope scope;
+    return parse(jsonString);
+#else
+#if (NODE_MAJOR_VERSION >= 7)
+    return v8::JSON::Parse(Nan::GetCurrentContext(), jsonString);
+#else
+    return v8::JSON::Parse(jsonString);
+#endif
+#endif
+  }
+
+  inline
+  Nan::MaybeLocal<v8::String> Stringify(v8::Local<v8::Object> jsonObject) {
+#if NAN_JSON_H_NEED_STRINGIFY
+    Nan::HandleScope scope;
+    return stringify(jsonObject)->ToString();
+#else
+    return v8::JSON::Stringify(Nan::GetCurrentContext(), jsonObject);
+#endif
+  }
+
+  inline
+  Nan::MaybeLocal<v8::String> Stringify(v8::Local<v8::Object> jsonObject,
+    v8::Local<v8::String> gap) {
+#if NAN_JSON_H_NEED_STRINGIFY
+    Nan::HandleScope scope;
+    return stringify(jsonObject, gap)->ToString();
+#else
+    return v8::JSON::Stringify(Nan::GetCurrentContext(), jsonObject, gap);
+#endif
+  }
+
+ private:
+  NAN_DISALLOW_ASSIGN_COPY_MOVE(JSON)
+#if NAN_JSON_H_NEED_PARSE
+  Nan::Callback m_cb_parse;
+#endif
+#if NAN_JSON_H_NEED_STRINGIFY
+  Nan::Callback m_cb_stringify;
+#endif
 
 #if NAN_JSON_H_NEED_PARSE
   inline v8::Local<v8::Value> parse(v8::Local<v8::Value> arg) {
