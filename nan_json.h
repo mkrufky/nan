@@ -25,7 +25,7 @@ class JSON {
  public:
   JSON() {
 #if (NAN_JSON_H_NEED_PARSE + NAN_JSON_H_NEED_STRINGIFY)
-    v8::MaybeLocal<v8::Value> maybeGlobalJSON =
+    Nan::MaybeLocal<v8::Value> maybeGlobalJSON =
       Nan::Get(
         Nan::GetCurrentContext()->Global(),
         Nan::New("JSON").ToLocalChecked()
@@ -39,7 +39,7 @@ class JSON {
           Nan::To<v8::Object>(valGlobalJSON).ToLocalChecked();
 
 #if NAN_JSON_H_NEED_PARSE
-        v8::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
+        Nan::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
           globalJSON, Nan::New("parse").ToLocalChecked()
         );
 
@@ -53,7 +53,7 @@ class JSON {
 #endif
 
 #if NAN_JSON_H_NEED_STRINGIFY
-        v8::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
+        Nan::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
           globalJSON, Nan::New("stringify").ToLocalChecked()
         );
 
