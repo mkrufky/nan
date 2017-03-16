@@ -35,7 +35,7 @@ class JSON {
       v8::Local<v8::Value> valGlobalJSON = maybeGlobalJSON.ToLocalChecked();
 
       if (valGlobalJSON->IsObject()) {
-        v8::MaybeLocal<v8::Object> maybeObjGlobalJSON =
+        Nan::MaybeLocal<v8::Object> maybeObjGlobalJSON =
           Nan::To<v8::Object>(valGlobalJSON);
 
         if (!maybeObjGlobalJSON.IsEmpty()) {
