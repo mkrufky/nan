@@ -35,37 +35,45 @@ class JSON {
       v8::Local<v8::Value> valGlobalJSON = maybeGlobalJSON.ToLocalChecked();
 
       if (valGlobalJSON->IsObject()) {
-        v8::Local<v8::Object> globalJSON =
-          Nan::To<v8::Object>(valGlobalJSON).ToLocalChecked();
+        v8::MaybeLocal<v8::Object> maybeObjGlobalJSON =
+          Nan::To<v8::Object>(valGlobalJSON);
+
+        if (!maybeObjGlobalJSON.IsEmpty()) {
+          v8::Local<v8::Object> globalJSON =
+            maybeObjGlobalJSON.ToLocalChecked();
 
 #if NAN_JSON_H_NEED_PARSE
-        Nan::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
-          globalJSON, Nan::New("parse").ToLocalChecked()
-        );
+          Nan::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
+            globalJSON, Nan::New("parse").ToLocalChecked()
+          );
 
-        if (!maybeParseMethod.IsEmpty()) {
-          v8::Local<v8::Value> parseMethod = maybeParseMethod.ToLocalChecked();
+          if (!maybeParseMethod.IsEmpty()) {
+            v8::Local<v8::Value> parseMethod =
+              maybeParseMethod.ToLocalChecked();
 
-          if (parseMethod->IsFunction()) {
-            m_cb_parse.Reset(v8::Local<v8::Function>::Cast(parseMethod));
+            if (parseMethod->IsFunction()) {
+              m_cb_parse.Reset(v8::Local<v8::Function>::Cast(parseMethod));
+            }
           }
-        }
 #endif
 
 #if NAN_JSON_H_NEED_STRINGIFY
-        Nan::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
-          globalJSON, Nan::New("stringify").ToLocalChecked()
-        );
+          Nan::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
+            globalJSON, Nan::New("stringify").ToLocalChecked()
+          );
 
-        if (!maybeStringifyMethod.IsEmpty()) {
-          v8::Local<v8::Value> stringifyMethod =
-            maybeStringifyMethod.ToLocalChecked();
+          if (!maybeStringifyMethod.IsEmpty()) {
+            v8::Local<v8::Value> stringifyMethod =
+              maybeStringifyMethod.ToLocalChecked();
 
-          if (stringifyMethod->IsFunction()) {
-            m_cb_stringify.Reset(v8::Local<v8::Function>::Cast(stringifyMethod));
+            if (stringifyMethod->IsFunction()) {
+              m_cb_stringify.Reset(
+                v8::Local<v8::Function>::Cast(stringifyMethod)
+              );
+            }
           }
-        }
 #endif
+        }
       }
     }
 #endif
