@@ -30,11 +30,15 @@ class JSON {
     m_persistent.Reset(obj);
 
     v8::Local<v8::Value> objectName = Nan::New("JSON").ToLocalChecked();
-    v8::Local<v8::Value> globalJSON =
-      Nan::Get(Nan::GetCurrentContext()->Global(), objectName).ToLocalChecked();
+    v8::MaybeLocal<v8::Value> maybeGlobalJSON =
+      Nan::Get(Nan::GetCurrentContext()->Global(), objectName);
 
-    if (globalJSON->IsObject()) {
-      obj->Set(objectName, globalJSON);
+    if (!maybeGlobalJSON.IsEmpty()) {
+      v8::Local<v8::Value> globalJSON = maybeGlobalJSON.ToLocalChecked();
+
+      if (globalJSON->IsObject()) {
+        obj->Set(objectName, globalJSON);
+      }
     }
 #endif
   }
@@ -92,10 +96,16 @@ class JSON {
     v8::Local<v8::String> methodName = Nan::New(method).ToLocalChecked();
 
     if (!persistent->Has(methodName)) {
-      v8::Local<v8::Value> thisMethod =
-        Nan::Get(obj, methodName).ToLocalChecked();
+      v8::MaybeLocal<v8::Value> maybeThisMethod =
+        Nan::Get(obj, methodName);
 
-      if (thisMethod.IsEmpty() || !thisMethod->IsFunction()) {
+      if (maybeThisMethod.IsEmpty()) {
+        return Nan::Undefined();
+      }
+
+      v8::Local<v8::Value> thisMethod = maybeThisMethod.ToLocalChecked();
+
+      if (!thisMethod->IsFunction()) {
         return Nan::Undefined();
       }
 
@@ -108,9 +118,15 @@ class JSON {
 
   v8::Local<v8::Value> Call(const char *method,
     int argc, v8::Local<v8::Value> *argv) {
-    v8::Local<v8::Value> globalJSON = Nan::Get(
+    v8::MaybeLocal<v8::Value> maybeGlobalJSON = Nan::Get(
       Nan::New(m_persistent), Nan::New("JSON").ToLocalChecked()
-    ).ToLocalChecked();
+    );
+
+    if (maybeGlobalJSON.IsEmpty()) {
+      return Nan::Undefined();
+    }
+
+    v8::Local<v8::Value> globalJSON = maybeGlobalJSON.ToLocalChecked();
 
     if (!globalJSON->IsObject()) {
       return Nan::Undefined();
