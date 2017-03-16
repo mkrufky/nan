@@ -25,32 +25,45 @@ class JSON {
  public:
   JSON() {
 #if (NAN_JSON_H_NEED_PARSE + NAN_JSON_H_NEED_STRINGIFY)
-    v8::Local<v8::Value> globalJSON =
+    v8::MaybeLocal<v8::Value> maybeGlobalJSON =
       Nan::Get(
         Nan::GetCurrentContext()->Global(),
         Nan::New("JSON").ToLocalChecked()
-      ).ToLocalChecked();
+      );
 
-    if (globalJSON->IsObject()) {
+    if (!maybeGlobalJSON.IsEmpty()) {
+      v8::Local<v8::Value> globalJSON = maybeGlobalJSON.ToLocalChecked();
+
+      if (globalJSON->IsObject()) {
 #if NAN_JSON_H_NEED_PARSE
-      v8::Local<v8::Value> parseMethod = Nan::Get(
-        globalJSON->ToObject(), Nan::New("parse").ToLocalChecked()
-      ).ToLocalChecked();
+        v8::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
+          globalJSON->ToObject(), Nan::New("parse").ToLocalChecked()
+        );
 
-      if (!parseMethod.IsEmpty() && parseMethod->IsFunction()) {
-        m_cb_parse.Reset(v8::Local<v8::Function>::Cast(parseMethod));
-      }
+        if (!maybeParseMethod.IsEmpty()) {
+          v8::Local<v8::Value> parseMethod = maybeParseMethod.ToLocalChecked();
+
+          if (parseMethod->IsFunction()) {
+            m_cb_parse.Reset(v8::Local<v8::Function>::Cast(parseMethod));
+          }
+        }
 #endif
 
 #if NAN_JSON_H_NEED_STRINGIFY
-      v8::Local<v8::Value> stringifyMethod = Nan::Get(
-        globalJSON->ToObject(), Nan::New("stringify").ToLocalChecked()
-      ).ToLocalChecked();
+        v8::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
+          globalJSON->ToObject(), Nan::New("stringify").ToLocalChecked()
+        );
 
-      if (!stringifyMethod.IsEmpty() && stringifyMethod->IsFunction()) {
-        m_cb_stringify.Reset(v8::Local<v8::Function>::Cast(stringifyMethod));
-      }
+        if (!maybeStringifyMethod.IsEmpty()) {
+          v8::Local<v8::Value> stringifyMethod =
+            maybeStringifyMethod.ToLocalChecked();
+
+          if (stringifyMethod->IsFunction()) {
+            m_cb_stringify.Reset(v8::Local<v8::Function>::Cast(stringifyMethod));
+          }
+        }
 #endif
+      }
     }
 #endif
   }
