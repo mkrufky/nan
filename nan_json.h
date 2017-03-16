@@ -32,12 +32,15 @@ class JSON {
       );
 
     if (!maybeGlobalJSON.IsEmpty()) {
-      v8::Local<v8::Value> globalJSON = maybeGlobalJSON.ToLocalChecked();
+      v8::Local<v8::Value> valGlobalJSON = maybeGlobalJSON.ToLocalChecked();
 
-      if (globalJSON->IsObject()) {
+      if (valGlobalJSON->IsObject()) {
+        v8::Local<v8::Object> globalJSON =
+          Nan::To<v8::Object>(valGlobalJSON).ToLocalChecked();
+
 #if NAN_JSON_H_NEED_PARSE
         v8::MaybeLocal<v8::Value> maybeParseMethod = Nan::Get(
-          globalJSON->ToObject(), Nan::New("parse").ToLocalChecked()
+          globalJSON, Nan::New("parse").ToLocalChecked()
         );
 
         if (!maybeParseMethod.IsEmpty()) {
@@ -51,7 +54,7 @@ class JSON {
 
 #if NAN_JSON_H_NEED_STRINGIFY
         v8::MaybeLocal<v8::Value> maybeStringifyMethod = Nan::Get(
-          globalJSON->ToObject(), Nan::New("stringify").ToLocalChecked()
+          globalJSON, Nan::New("stringify").ToLocalChecked()
         );
 
         if (!maybeStringifyMethod.IsEmpty()) {
