@@ -48,7 +48,7 @@ Example:
 
 ```c++
 // using `v8::Local<v8::Value> val` from the `JSON::Parse` example
-v8::Local<v8::Object> obj = Nan::To<v8::Object>(val);
+v8::Local<v8::Object> obj = Nan::To<v8::Object>(val).ToLocalChecked();
 
 Nan::JSON NanJSON;
 v8::Local<v8::String> stringified = NanJSON.Stringify(obj).ToLocalChecked();
