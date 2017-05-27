@@ -58,10 +58,12 @@
 # pragma warning( disable : 4530 )
 # include <string>
 # include <vector>
+# include <queue>
 # pragma warning( pop )
 #else
 # include <string>
 # include <vector>
+# include <queue>
 #endif
 
 // uv helpers
@@ -1672,6 +1674,74 @@ template<class T>
 
  protected:
   uv_async_t *async;
+};
+
+template<class T>
+/* abstract */ class AsyncWakeRequestor : public AsyncWakeRequestorBase<T> {
+ public:
+  explicit AsyncWakeRequestor(Callback *callback_)
+      : AsyncWakeRequestorBase<T>(callback_) {
+    uv_mutex_init(&async_lock);
+  }
+
+  virtual ~AsyncWakeRequestor() {
+    uv_mutex_lock(&async_lock);
+
+    while (!asyncdata_.empty()) {
+      std::pair<T*, size_t> *datapair = asyncdata_.front();
+      T *data = datapair->first;
+
+      asyncdata_.pop();
+
+      delete[] data;
+      delete datapair;
+    }
+
+    uv_mutex_unlock(&async_lock);
+    uv_mutex_destroy(&async_lock);
+  }
+
+  void WorkProgress() {
+    uv_mutex_lock(&async_lock);
+
+    while (!asyncdata_.empty()) {
+      std::pair<T*, size_t> *datapair = asyncdata_.front();
+      T *data = datapair->first;
+      size_t size = datapair->second;
+      asyncdata_.pop();
+      uv_mutex_unlock(&async_lock);
+
+      // Don't send progress events after we've already completed.
+      if (this->callback) {
+          this->HandleProgressCallback(data, size);
+      }
+
+      delete[] data;
+      delete datapair;
+
+      uv_mutex_lock(&async_lock);
+    }
+
+    uv_mutex_unlock(&async_lock);
+  }
+
+ private:
+  void SendProgress_(const T *data, size_t count) {
+    T *new_data = new T[count];
+    {
+      T *it = new_data;
+      std::copy(data, data + count, it);
+    }
+
+    uv_mutex_lock(&async_lock);
+    asyncdata_.push(new std::pair<T*, size_t>(new_data, count));
+    uv_mutex_unlock(&async_lock);
+
+    uv_async_send(this->async);
+  }
+
+  uv_mutex_t async_lock;
+  std::queue<std::pair<T*, size_t>*> asyncdata_;
 };
 
 template<class T>
