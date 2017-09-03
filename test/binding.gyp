@@ -44,6 +44,10 @@
       , "sources"     : [ "cpp/returnemptystring.cpp" ]
     }
   , {
+        "target_name" : "asyncwakerequestor"
+      , "sources"     : [ "cpp/asyncwakerequestor.cpp" ]
+    }
+  , {
         "target_name" : "asyncworker"
       , "sources"     : [ "cpp/asyncworker.cpp" ]
     }
