@@ -21,3 +21,15 @@ test('asyncprogressworker', function (t) {
     t.end()
   })
 })
+
+test('asyncprogressworker', function (t) {
+  var worker = bindings.a
+    , progressed = 0
+  worker(0, 500, function(i) {
+    t.ok(i >= progressed, 'got the progress updates #' + i);
+    progressed++;
+  }, function () {
+    t.ok(progressed < 500, 'got some but not all progress updates')
+    t.end()
+  })
+})
