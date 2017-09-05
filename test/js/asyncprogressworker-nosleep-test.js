@@ -18,7 +18,7 @@ test('asyncprogressworker', function (t) {
     t.ok(i >= progressed, 'got the progress updates #' + i);
     progressed++;
   }, function () {
-    t.ok(progressed < 500, 'got some but not all progress updates')
+    t.ok(progressed <= 500, 'got some but not necessarily all progress updates')
     t.end()
   })
 })
