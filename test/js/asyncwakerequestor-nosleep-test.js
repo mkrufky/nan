@@ -10,7 +10,7 @@ const test     = require('tap').test
     , testRoot = require('path').resolve(__dirname, '..')
     , bindings = require('bindings')({ module_root: testRoot, bindings: 'asyncwakerequestor' });
 
-test('asyncwakerequestor', function (t) {
+test('asyncwakerequestornosleep', function (t) {
   // test with no sleep
   var worker = bindings.a
     , progressed = 0
