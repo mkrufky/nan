@@ -11,6 +11,7 @@ const test     = require('tap').test
     , bindings = require('bindings')({ module_root: testRoot, bindings: 'asyncwakerequestor' });
 
 test('asyncwakerequestor', function (t) {
+  // test with 100 ms sleep
   var worker = bindings.a
     , progressed = 0
   worker(100, 5, function(i) {
@@ -18,18 +19,6 @@ test('asyncwakerequestor', function (t) {
     progressed++;
   }, function () {
     t.ok(progressed === 5, 'got all progress updates')
-    t.end()
-  })
-})
-
-test('asyncwakerequestor', function (t) {
-  var worker = bindings.a
-    , progressed = 0
-  worker(0, 500, function(i) {
-    t.ok(i === progressed, 'got the progress updates #' + i);
-    progressed++;
-  }, function () {
-    t.ok(progressed === 500, 'got all progress updates')
     t.end()
   })
 })

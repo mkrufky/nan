@@ -11,14 +11,14 @@ const test     = require('tap').test
     , bindings = require('bindings')({ module_root: testRoot, bindings: 'asyncprogressworker' });
 
 test('asyncprogressworker', function (t) {
-  // test with 100 ms sleep
+  // test with no sleep
   var worker = bindings.a
     , progressed = 0
-  worker(100, 5, function(i) {
-    t.ok(i === progressed, 'got the progress updates #' + i);
+  worker(0, 500, function(i) {
+    t.ok(i >= progressed, 'got the progress updates #' + i);
     progressed++;
   }, function () {
-    t.ok(progressed === 5, 'got all progress updates')
+    t.ok(progressed < 500, 'got some but not all progress updates')
     t.end()
   })
 })
