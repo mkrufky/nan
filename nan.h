@@ -59,11 +59,13 @@
 # include <string>
 # include <vector>
 # include <queue>
+# include <utility>
 # pragma warning( pop )
 #else
 # include <string>
 # include <vector>
 # include <queue>
+# include <utility>
 #endif
 
 // uv helpers
