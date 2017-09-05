@@ -1745,7 +1745,8 @@ template<class T>
 };
 
 template<class T>
-/* abstract */ class AsyncProgressWorkerBase : public AsyncWakeRequestorBase<T> {
+/* abstract */
+class AsyncProgressWorkerBase : public AsyncWakeRequestorBase<T> {
  public:
   explicit AsyncProgressWorkerBase(Callback *callback_)
       : AsyncWakeRequestorBase<T>(callback_), asyncdata_(NULL), asyncsize_(0) {
