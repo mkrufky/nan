@@ -30,6 +30,10 @@ class WakeRequestor : public AsyncWakeRequestor<char> {
       progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
       Sleep(milliseconds);
     }
+    if (!milliseconds) {
+      // force a sleep after the last event
+      Sleep(100);
+    }
   }
 
   void HandleProgressCallback(const char *data, size_t count) {
