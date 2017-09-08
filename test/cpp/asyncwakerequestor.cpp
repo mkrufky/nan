@@ -29,10 +29,10 @@ class WakeRequestor : public AsyncWakeRequestor<char> {
     for (int i = 0; i < iters; ++i) {
       progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
       Sleep(milliseconds);
-    }
-    if (!milliseconds) {
-      // force a sleep after the last event
-      Sleep(100);
+      if (0 == i + milliseconds) {
+        // force a sleep after the first event, only
+        Sleep(100);
+      }
     }
   }
 
