@@ -30,9 +30,13 @@ class ProgressWorker : public AsyncProgressWorker {
       progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
       Sleep(milliseconds);
       if (0 == i + milliseconds) {
-        // force a sleep after the first event, only
+        // force a sleep after the first event
         Sleep(100);
       }
+    }
+    if (!milliseconds) {
+      // force a sleep after the last event
+      Sleep(100);
     }
   }
 
