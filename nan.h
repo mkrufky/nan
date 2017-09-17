@@ -1611,9 +1611,9 @@ class Callback {
 };
 
 template<class T>
-/* abstract */ class AsyncWakeRequestorBase : public AsyncWorker {
+/* abstract */ class AsyncBareProgressWorker : public AsyncWorker {
  public:
-  explicit AsyncWakeRequestorBase(Callback *callback_)
+  explicit AsyncBareProgressWorker(Callback *callback_)
       : AsyncWorker(callback_) {
     async = new uv_async_t;
     uv_async_init(
@@ -1624,13 +1624,13 @@ template<class T>
     async->data = this;
   }
 
-  virtual ~AsyncWakeRequestorBase() {
+  virtual ~AsyncBareProgressWorker() {
   }
 
   virtual void WorkProgress() = 0;
 
   class ExecutionProgress {
-    friend class AsyncWakeRequestorBase;
+    friend class AsyncBareProgressWorker;
    public:
     void Signal() const {
         uv_async_send(that_->async);
@@ -1641,9 +1641,9 @@ template<class T>
     }
 
    private:
-    explicit ExecutionProgress(AsyncWakeRequestorBase *that) : that_(that) {}
+    explicit ExecutionProgress(AsyncBareProgressWorker *that) : that_(that) {}
     NAN_DISALLOW_ASSIGN_COPY_MOVE(ExecutionProgress)
-    AsyncWakeRequestorBase* const that_;
+    AsyncBareProgressWorker* const that_;
   };
 
   virtual void Execute(const ExecutionProgress& progress) = 0;
@@ -1662,14 +1662,14 @@ template<class T>
   virtual void SendProgress_(const T *data, size_t count) = 0;
 
   inline static NAUV_WORK_CB(AsyncProgress_) {
-    AsyncWakeRequestorBase *worker =
-            static_cast<AsyncWakeRequestorBase*>(async->data);
+    AsyncBareProgressWorker *worker =
+            static_cast<AsyncBareProgressWorker*>(async->data);
     worker->WorkProgress();
   }
 
   inline static void AsyncClose_(uv_handle_t* handle) {
-    AsyncWakeRequestorBase *worker =
-            static_cast<AsyncWakeRequestorBase*>(handle->data);
+    AsyncBareProgressWorker *worker =
+            static_cast<AsyncBareProgressWorker*>(handle->data);
     delete reinterpret_cast<uv_async_t*>(handle);
     delete worker;
   }
@@ -1679,14 +1679,15 @@ template<class T>
 };
 
 template<class T>
-/* abstract */ class AsyncWakeRequestor : public AsyncWakeRequestorBase<T> {
+/* abstract */
+class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T> {
  public:
-  explicit AsyncWakeRequestor(Callback *callback_)
-      : AsyncWakeRequestorBase<T>(callback_) {
+  explicit AsyncProgressQueueWorker(Callback *callback_)
+      : AsyncBareProgressWorker<T>(callback_) {
     uv_mutex_init(&async_lock);
   }
 
-  virtual ~AsyncWakeRequestor() {
+  virtual ~AsyncProgressQueueWorker() {
     uv_mutex_lock(&async_lock);
 
     while (!asyncdata_.empty()) {
@@ -1748,10 +1749,10 @@ template<class T>
 
 template<class T>
 /* abstract */
-class AsyncProgressWorkerBase : public AsyncWakeRequestorBase<T> {
+class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T> {
  public:
   explicit AsyncProgressWorkerBase(Callback *callback_)
-      : AsyncWakeRequestorBase<T>(callback_), asyncdata_(NULL), asyncsize_(0) {
+      : AsyncBareProgressWorker<T>(callback_), asyncdata_(NULL), asyncsize_(0) {
     uv_mutex_init(&async_lock);
   }
 

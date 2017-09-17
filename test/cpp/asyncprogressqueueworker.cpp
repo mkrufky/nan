@@ -14,18 +14,18 @@
 
 using namespace Nan;  // NOLINT(build/namespaces)
 
-class WakeRequestor : public AsyncWakeRequestor<char> {
+class WakeRequestor : public AsyncProgressQueueWorker<char> {
  public:
   WakeRequestor(
       Callback *callback
     , Callback *progress
     , int milliseconds
     , int iters)
-    : AsyncWakeRequestor(callback), progress(progress)
+    : AsyncProgressQueueWorker(callback), progress(progress)
     , milliseconds(milliseconds), iters(iters) {}
   ~WakeRequestor() {}
 
-  void Execute (const AsyncWakeRequestor::ExecutionProgress& progress) {
+  void Execute (const AsyncProgressQueueWorker::ExecutionProgress& progress) {
     for (int i = 0; i < iters; ++i) {
       progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
       Sleep(milliseconds);
@@ -71,4 +71,4 @@ NAN_MODULE_INIT(Init) {
     , New<v8::FunctionTemplate>(DoProgress)->GetFunction());
 }
 
-NODE_MODULE(asyncwakerequestor, Init)
+NODE_MODULE(asyncprogressqueueworker, Init)
