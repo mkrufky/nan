@@ -29,14 +29,6 @@ class WakeRequestor : public AsyncProgressQueueWorker<char> {
     for (int i = 0; i < iters; ++i) {
       progress.Send(reinterpret_cast<const char*>(&i), sizeof(int));
       Sleep(milliseconds);
-      if (0 == i + milliseconds) {
-        // force a sleep after the first event
-        Sleep(100);
-      }
-    }
-    if (!milliseconds) {
-      // force a sleep after the last event
-      Sleep(100);
     }
   }
 
