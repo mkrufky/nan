@@ -53,19 +53,18 @@
 #include <cstring>
 #include <climits>
 #include <cstdlib>
+#include <utility>
 #if defined(_MSC_VER)
 # pragma warning( push )
 # pragma warning( disable : 4530 )
+# include <queue>
 # include <string>
 # include <vector>
-# include <queue>
-# include <utility>
 # pragma warning( pop )
 #else
+# include <queue>
 # include <string>
 # include <vector>
-# include <queue>
-# include <utility>
 #endif
 
 // uv helpers
