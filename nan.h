@@ -53,15 +53,16 @@
 #include <cstring>
 #include <climits>
 #include <cstdlib>
-#include <queue>
 #include <utility>
 #if defined(_MSC_VER)
 # pragma warning( push )
 # pragma warning( disable : 4530 )
+# include <queue>
 # include <string>
 # include <vector>
 # pragma warning( pop )
 #else
+# include <queue>
 # include <string>
 # include <vector>
 #endif
