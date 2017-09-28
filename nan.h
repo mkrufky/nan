@@ -1609,7 +1609,7 @@ class Callback {
   char *errmsg_;
 };
 
-template<class T>
+template<class T, typename... Targs>
 /* abstract */ class AsyncBareProgressWorker : public AsyncWorker {
  public:
   explicit AsyncBareProgressWorker(Callback *callback_)
@@ -1635,8 +1635,12 @@ template<class T>
         uv_async_send(that_->async);
     }
 
-    void Send(const T* data, size_t count) const {
-        that_->SendProgress_(data, count);
+    void Send(const T* data, size_t count, Targs... Fargs) const {
+        that_->SendProgress_(data, count, Fargs...);
+    }
+
+    void Construct(size_t count, Targs... Fargs) const {
+        that_->ConstructProgress_(count, Fargs...);
     }
 
    private:
@@ -1658,7 +1662,8 @@ template<class T>
       Execute(progress);
   }
 
-  virtual void SendProgress_(const T *data, size_t count) = 0;
+  virtual void SendProgress_(const T *data, size_t count, Targs... Fargs) = 0;
+  virtual void ConstructProgress_(size_t count, Targs... Fargs) = 0;
 
   inline static NAUV_WORK_CB(AsyncProgress_) {
     AsyncBareProgressWorker *worker =
@@ -1677,12 +1682,12 @@ template<class T>
   uv_async_t *async;
 };
 
-template<class T>
+template<class T, typename... Targs>
 /* abstract */
-class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T> {
+class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T, Targs...> {
  public:
   explicit AsyncProgressQueueWorker(Callback *callback_)
-      : AsyncBareProgressWorker<T>(callback_) {
+      : AsyncBareProgressWorker<T, Targs...>(callback_) {
     uv_mutex_init(&async_lock);
   }
 
@@ -1733,8 +1738,8 @@ class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T> {
   }
 
  private:
-  void SendProgress_(const T *data, size_t count) {
-    T *new_data = new T[count];
+  void SendProgress_(const T *data, size_t count, Targs... Fargs) {
+    T *new_data = new T[count](Fargs...);
     {
       T *it = new_data;
       std::copy(data, data + count, it);
@@ -1747,16 +1752,27 @@ class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T> {
     uv_async_send(this->async);
   }
 
+  void ConstructProgress_(size_t count, Targs... Fargs) {
+    T *new_data = new T[count](Fargs...);
+
+    uv_mutex_lock(&async_lock);
+    asyncdata_.push(new std::pair<T*, size_t>(new_data, count));
+    uv_mutex_unlock(&async_lock);
+
+    uv_async_send(this->async);
+  }
+
   uv_mutex_t async_lock;
   std::queue<std::pair<T*, size_t>*> asyncdata_;
 };
 
-template<class T>
+template<class T, typename... Targs>
 /* abstract */
-class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T> {
+class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T, Targs...> {
  public:
   explicit AsyncProgressWorkerBase(Callback *callback_)
-      : AsyncBareProgressWorker<T>(callback_), asyncdata_(NULL), asyncsize_(0) {
+      : AsyncBareProgressWorker<T, Targs...>(callback_)
+      , asyncdata_(NULL), asyncsize_(0) {
     uv_mutex_init(&async_lock);
   }
 
@@ -1781,12 +1797,25 @@ class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T> {
   }
 
  private:
-  void SendProgress_(const T *data, size_t count) {
-    T *new_data = new T[count];
+  void SendProgress_(const T *data, size_t count, Targs... Fargs) {
+    T *new_data = new T[count](Fargs...);
     {
       T *it = new_data;
       std::copy(data, data + count, it);
     }
+
+    uv_mutex_lock(&async_lock);
+    T *old_data = asyncdata_;
+    asyncdata_ = new_data;
+    asyncsize_ = count;
+    uv_mutex_unlock(&async_lock);
+
+    delete[] old_data;
+    uv_async_send(this->async);
+  }
+
+  void ConstructProgress_(size_t count, Targs... Fargs) {
+    T *new_data = new T[count](Fargs...);
 
     uv_mutex_lock(&async_lock);
     T *old_data = asyncdata_;
