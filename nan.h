@@ -1739,7 +1739,10 @@ class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T, Targs...> {
 
  private:
   void SendProgress_(const T *data, size_t count, Targs... Fargs) {
-    T *new_data = new T[count](Fargs...);
+    T* new_data = static_cast<T*>(::operator new[](count*sizeof(T)));
+    for (size_t i = 0; i < count; i++) {
+      ::new (new_data+i) T(Fargs...);
+    }
     {
       T *it = new_data;
       std::copy(data, data + count, it);
@@ -1753,7 +1756,10 @@ class AsyncProgressQueueWorker : public AsyncBareProgressWorker<T, Targs...> {
   }
 
   void ConstructProgress_(size_t count, Targs... Fargs) {
-    T *new_data = new T[count](Fargs...);
+    T* new_data = static_cast<T*>(::operator new[](count*sizeof(T)));
+    for (size_t i = 0; i < count; i++) {
+      ::new (new_data+i) T(Fargs...);
+    }
 
     uv_mutex_lock(&async_lock);
     asyncdata_.push(new std::pair<T*, size_t>(new_data, count));
@@ -1798,7 +1804,10 @@ class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T, Targs...> {
 
  private:
   void SendProgress_(const T *data, size_t count, Targs... Fargs) {
-    T *new_data = new T[count](Fargs...);
+    T* new_data = static_cast<T*>(::operator new[](count*sizeof(T)));
+    for (size_t i = 0; i < count; i++) {
+      ::new (new_data+i) T(Fargs...);
+    }
     {
       T *it = new_data;
       std::copy(data, data + count, it);
@@ -1815,7 +1824,10 @@ class AsyncProgressWorkerBase : public AsyncBareProgressWorker<T, Targs...> {
   }
 
   void ConstructProgress_(size_t count, Targs... Fargs) {
-    T *new_data = new T[count](Fargs...);
+    T* new_data = static_cast<T*>(::operator new[](count*sizeof(T)));
+    for (size_t i = 0; i < count; i++) {
+      ::new (new_data+i) T(Fargs...);
+    }
 
     uv_mutex_lock(&async_lock);
     T *old_data = asyncdata_;
